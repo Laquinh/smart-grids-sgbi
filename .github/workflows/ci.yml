@@ -25,3 +25,18 @@ jobs:
       - name: List running containers
         run: docker ps
 
+      - name: Check TimescaleDB Tables
+        run: |
+          sleep 10  # Allow TimescaleDB to initialize
+          OUTPUT=$(docker exec timescaledb psql -U myuser -d mydb -c "\d+" 2>&1)
+
+          echo "$OUTPUT"
+
+          if echo "$OUTPUT" | grep -q "Did not find any relations."; then
+            echo "❌ No tables found in TimescaleDB! Failing the test."
+            exit 1
+          else
+            echo "✅ Tables detected in TimescaleDB."
+          fi
+
+
